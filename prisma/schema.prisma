@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  DOSEN
+  MAHASISWA
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(MAHASISWA)
+  name      String
+  
+  student   Student? 
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Student {
+  id               String   @id @default(uuid())
+  nim              String   @unique
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  dosenId          String?  
+  
+  gender           String   
+  age              Int
+  maritalStatus    String   
+  
+  attendanceRate   Float    
+  discussionPart   Float    
+  assignmentScore  Float    
+  elearningActive  Float    
+  gpa              Float    
+  
+  predictions      Prediction[]
+  progressHistory  AcademicProgress[]
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Prediction {
+  id                  String   @id @default(uuid())
+  studentId           String
+  student             Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  academicStatus      String   
+  probability         Float    
+  academicHealthScore Float    
+  dominantFactors     Json?    
+  
+  recommendations     Recommendation[]
+
+  createdAt           DateTime @default(now())
+}
+
+model Recommendation {
+  id            String     @id @default(uuid())
+  predictionId  String
+  prediction    Prediction @relation(fields: [predictionId], references: [id], onDelete: Cascade)
+  message       String     
+
+  createdAt     DateTime   @default(now())
+}
+
+model AcademicProgress {
+  id               String   @id @default(uuid())
+  studentId        String
+  student          Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  semester         Int
+  attendanceRate   Float
+  assignmentScore  Float
+  elearningActive  Float
+  gpa              Float
+  
+  recordedAt       DateTime @default(now())
+}
