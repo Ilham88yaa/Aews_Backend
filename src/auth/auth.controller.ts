@@ -1,5 +1,6 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -7,8 +8,7 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  async login(@Body() signInDto: Record<string, any>) {
-    // Memanggil fungsi login dari AuthService yang baru saja kita buat
-    return this.authService.login(signInDto.email, signInDto.password);
+  login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto);
   }
 }

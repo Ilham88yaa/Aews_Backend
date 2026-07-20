@@ -4,22 +4,23 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Enkripsi password 'admin123' sebelum dimasukkan ke database
-  const hashedPassword = await bcrypt.hash('admin123', 10);
+  // Hash password biar aman (seperti yang kita buat sebelumnya)
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash('admin123', salt);
 
-  // Buat akun admin (upsert memastikan data tidak duplikat jika script dijalankan 2x)
+  // Buat akun Admin
   const admin = await prisma.user.upsert({
     where: { email: 'admin@aews.com' },
     update: {},
     create: {
       email: 'admin@aews.com',
-      name: 'Super Admin AEWS',
       password: hashedPassword,
-      role: 'ADMIN',
+      name: 'Dr. Jane Smith', // Sesuai dengan UI Anda
+      role: 'ADMIN', // Menggunakan enum Role yang baru
     },
   });
 
-  console.log('🌱 Seed berhasil! Akun Admin dibuat:', admin.email);
+  console.log('✅ Seeding berhasil! Akun admin dibuat:', admin.email);
 }
 
 main()

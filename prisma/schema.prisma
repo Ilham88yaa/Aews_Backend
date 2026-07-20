@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,19 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Role disederhanakan sesuai permintaan
 enum Role {
-  ADMIN
-  DOSEN
-  MAHASISWA
+  ADMIN // Wali Dosen
+  USER  // Mahasiswa
 }
 
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
   password  String
-  role      Role     @default(MAHASISWA)
+  role      Role     @default(USER)
   name      String
   
+  // Relasi ke Student jika user adalah Mahasiswa
   student   Student? 
   
   createdAt DateTime @default(now())
@@ -37,17 +33,15 @@ model Student {
   userId           String   @unique
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  dosenId          String?  
-  
-  gender           String   
+  // 5 Variabel Input Utama (Sesuai kesepakatan baru)
+  gender           String   // 'Laki-laki' / 'Perempuan'
   age              Int
-  maritalStatus    String   
+  attendanceRate   Float    // Kehadiran (%)
+  assignmentScore  Float    // Nilai Tugas Rata-rata
+  discussionPart   Float    // Partisipasi Diskusi Rata-rata
   
-  attendanceRate   Float    
-  discussionPart   Float    
-  assignmentScore  Float    
-  elearningActive  Float    
-  gpa              Float    
+  // Data untuk evaluasi setelah semester berakhir
+  gpa              Float?   // IPS (Hanya diisi di akhir semester)
   
   predictions      Prediction[]
   progressHistory  AcademicProgress[]
@@ -61,10 +55,10 @@ model Prediction {
   studentId           String
   student             Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
   
-  academicStatus      String   
+  riskLevel           String   // Risiko Rendah, Sedang, Tinggi
   probability         Float    
   academicHealthScore Float    
-  dominantFactors     Json?    
+  dominantFactors     Json?    // Feature Importance
   
   recommendations     Recommendation[]
 
@@ -81,15 +75,15 @@ model Recommendation {
 }
 
 model AcademicProgress {
-  id               String   @id @default(uuid())
-  studentId        String
-  student          Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id              String   @id @default(uuid())
+  studentId       String
+  student         Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
   
-  semester         Int
-  attendanceRate   Float
-  assignmentScore  Float
-  elearningActive  Float
-  gpa              Float
+  semester        Int
+  attendanceRate  Float
+  assignmentScore Float
+  discussionPart  Float
+  gpa             Float    // IPS aktual
   
-  recordedAt       DateTime @default(now())
+  recordedAt      DateTime @default(now())
 }

@@ -1,18 +1,23 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { StudentsController } from './students.controller';
+import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import { StudentsService } from './students.service';
+import { CreateStudentDto } from './dto/create-student.dto';
+// import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // Buka komentar ini jika JWT Guard sudah siap
 
-describe('StudentsController', () => {
-  let controller: StudentsController;
+@Controller('students')
+export class StudentsController {
+  constructor(private readonly studentsService: StudentsService) {}
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [StudentsController],
-    }).compile();
+  // Endpoint untuk membuat data mahasiswa
+  // @UseGuards(JwtAuthGuard) // Buka komentar ini nanti untuk memproteksi endpoint
+  @Post()
+  create(@Body() createStudentDto: CreateStudentDto) {
+    return this.studentsService.create(createStudentDto);
+  }
 
-    controller = module.get<StudentsController>(StudentsController);
-  });
-
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-});
+  // Endpoint untuk mengambil seluruh data mahasiswa
+  // @UseGuards(JwtAuthGuard)
+  @Get()
+  findAll() {
+    return this.studentsService.findAll();
+  }
+}
