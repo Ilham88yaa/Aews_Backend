@@ -1,19 +1,25 @@
-import { IsString, IsNumber, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, IsOptional } from 'class-validator';
 
 export class CreatePredictionDto {
   @IsNotEmpty()
   @IsString()
-  studentId: string; // ID dari tabel Student yang baru saja Anda buat
+  studentId: string;
 
-  @IsNotEmpty()
-  @IsString()
-  riskStatus: string; // Contoh: 'Tinggi', 'Sedang', 'Rendah'
-
-  @IsNotEmpty()
-  @IsNumber()
-  confidenceScore: number; // Tingkat akurasi model ML (0 - 100)
-
+  // Jadikan opsional karena sekarang diisi otomatis oleh ML Service
   @IsOptional()
   @IsString()
-  recommendations?: string; // Saran intervensi dari sistem
+  riskStatus?: string; 
+
+  @IsOptional()
+  @IsNumber()
+  confidenceScore?: number;
+  
+  // Jika di file Anda ada riskLevel atau probability, tambahkan @IsOptional() juga
+  @IsOptional()
+  @IsString()
+  riskLevel?: string;
+
+  @IsOptional()
+  @IsNumber()
+  probability?: number;
 }

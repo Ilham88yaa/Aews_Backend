@@ -29,20 +29,28 @@ model User {
 
 model Student {
   id               String   @id @default(uuid())
+  
+  // Data Profil Utama
+  name             String   
   nim              String   @unique
-  userId           String   @unique
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  // 5 Variabel Input Utama (Sesuai kesepakatan baru)
-  gender           String   // 'Laki-laki' / 'Perempuan'
-  age              Int
-  attendanceRate   Float    // Kehadiran (%)
-  assignmentScore  Float    // Nilai Tugas Rata-rata
-  discussionPart   Float    // Partisipasi Diskusi Rata-rata
-  
+  // 3 Variabel Metrik Utama (Dengan default value)
+  attendanceRate   Float    @default(100) 
+  assignmentScore  Float    @default(100) 
+  discussionPart   Float    @default(10)  
+
   // Data untuk evaluasi setelah semester berakhir
   gpa              Float?   // IPS (Hanya diisi di akhir semester)
+
+  // ==========================================
+  // PERBAIKAN RELASI PRISMA (AGAR TIDAK ERROR)
+  // ==========================================
   
+  // 1. Relasi Balik ke User (Dibuat opsional '?' agar form tidak wajib ngirim userId)
+  userId           String?  @unique
+  user             User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 2. Relasi Balik ke Prediction & AcademicProgress (Cukup sediakan array kosong)
   predictions      Prediction[]
   progressHistory  AcademicProgress[]
 

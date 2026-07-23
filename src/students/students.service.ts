@@ -1,57 +1,52 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, ConflictException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service'; 
 import { CreateStudentDto } from './dto/create-student.dto';
-import { PrismaService } from '../prisma/prisma.service'; // Pastikan path ini sesuai dengan letak PrismaService Anda
 
 @Injectable()
 export class StudentsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createStudentDto: CreateStudentDto) {
-    // Mengecek apakah NIM atau User ID sudah dipakai
-    const existingStudent = await this.prisma.student.findFirst({
-      where: {
-        OR: [
-          { nim: createStudentDto.nim },
-          { userId: createStudentDto.userId },
-        ],
-      },
-    });
+  async create(data: CreateStudentDto) {
+    try {
+      const student = await this.prisma.student.create({
+        data: {
+          name: data.name,
+          nim: data.nim,
+          attendanceRate: data.attendanceRate ?? 100,
+          assignmentScore: data.assignmentScore ?? 100,
+          discussionPart: data.discussionPart ?? 10,
+        },
+      });
 
-    if (existingStudent) {
-      throw new ConflictException('Data Mahasiswa dengan NIM atau User ID tersebut sudah terdaftar.');
+      return student;
+    } catch (error: any) { // <-- PERBAIKAN: Tambahkan ': any' di sini
+      if (error.code === 'P2002') {
+        throw new ConflictException('NIM sudah terdaftar di database!');
+      }
+      throw new InternalServerErrorException('Gagal menyimpan data ke database');
     }
-
-    // Menyimpan data mahasiswa baru
-    return this.prisma.student.create({
-      data: {
-        nim: createStudentDto.nim,
-        userId: createStudentDto.userId,
-        gender: createStudentDto.gender,
-        age: createStudentDto.age,
-        attendanceRate: createStudentDto.attendanceRate,
-        assignmentScore: createStudentDto.assignmentScore,
-        discussionPart: createStudentDto.discussionPart,
-      },
-    });
   }
 
   async findAll() {
     return this.prisma.student.findMany({
-      include: { user: true }, // Menampilkan juga data akun user-nya
+      orderBy: { createdAt: 'desc' } 
     });
   }
 
+  // =======================================================
+  // PERBAIKAN: Tambahan fungsi CRUD agar Controller tidak error
+  // =======================================================
+  
   async findOne(id: string) {
     return this.prisma.student.findUnique({
       where: { id },
-      include: { user: true },
     });
   }
 
-  async update(id: string, updateData: Partial<CreateStudentDto>) {
+  async update(id: string, updateStudentDto: any) {
     return this.prisma.student.update({
       where: { id },
-      data: updateData,
+      data: updateStudentDto,
     });
   }
 
@@ -60,5 +55,4 @@ export class StudentsService {
       where: { id },
     });
   }
-
 }
